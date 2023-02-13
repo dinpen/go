@@ -4,14 +4,17 @@ import (
 	"time"
 )
 
+// 返回指针
 func Ptr[T any](v T) *T {
 	return &v
 }
 
+// 返回指针所指向的值
 func Val[T any](v *T) T {
 	return *v
 }
 
+// 返回指针切片
 func PtrSlice[T any](src []T) []*T {
 	dst := make([]*T, len(src))
 	for i := 0; i < len(src); i++ {
@@ -20,6 +23,7 @@ func PtrSlice[T any](src []T) []*T {
 	return dst
 }
 
+// 返回指针切片所指向的值切片
 func ValSlice[T any](src []*T) []T {
 	dst := make([]T, len(src))
 	for i := 0; i < len(src); i++ {
@@ -28,6 +32,7 @@ func ValSlice[T any](src []*T) []T {
 	return dst
 }
 
+// 返回指针 map
 func PtrMap[K comparable, V any](src map[K]V) map[K]*V {
 	dst := make(map[K]*V)
 	for k, val := range src {
@@ -37,6 +42,7 @@ func PtrMap[K comparable, V any](src map[K]V) map[K]*V {
 	return dst
 }
 
+// 返回指针 map 所指向的值 map
 func ValMap[K comparable, V any](src map[K]*V) map[K]V {
 	dst := make(map[K]V)
 	for k, val := range src {

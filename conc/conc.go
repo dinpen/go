@@ -16,10 +16,12 @@ type recoveredPanic struct {
 	stack   []byte
 }
 
+// 返回 panic 信息
 func (p *recoveredPanic) PanicInfo() string {
 	return fmt.Sprintf("panic: %v\nstacktrace: \n%s\n", p.val, string(p.stack))
 }
 
+// 返回 panic 的值
 func (p *recoveredPanic) PanicVal() any {
 	return p.val
 }
@@ -34,6 +36,7 @@ func newRecoveredPanic(v any) *recoveredPanic {
 	}
 }
 
+// WaitGroup 是 sync.WaitGroup 的扩展，可以捕获 goroutine 中的 panic
 type WaitGroup struct {
 	sync.WaitGroup
 	recovered atomic.Pointer[recoveredPanic]
@@ -49,12 +52,14 @@ func (wg *WaitGroup) try(f gofunc) {
 	f()
 }
 
+// Run 会并发执行 f 中的函数
 func Run(f ...gofunc) {
 	for _, v := range f {
 		go v()
 	}
 }
 
+// Wait 会并发执行 f 中的函数，并等待所有函数执行完毕
 func Wait(f ...gofunc) {
 	var wg sync.WaitGroup
 	wg.Add(len(f))
@@ -67,6 +72,8 @@ func Wait(f ...gofunc) {
 	wg.Wait()
 }
 
+// WaitAndRecover 会并发执行 f 中的函数，并等待所有函数执行完毕
+// 如果有 goroutine panic，会返回 panic 信息
 func WaitAndRecover(f ...gofunc) *recoveredPanic {
 	var wg WaitGroup
 	wg.Add(len(f))
@@ -80,10 +87,11 @@ func WaitAndRecover(f ...gofunc) *recoveredPanic {
 	return wg.recovered.Load()
 }
 
-func ForIndex(num int, f func(i int)) {
+// ForIndex 会并发执行 f 中的函数 n 次，并等待执行完毕
+func ForIndex(n int, f func(i int)) {
 	var wg sync.WaitGroup
-	wg.Add(num)
-	for i := 0; i < num; i++ {
+	wg.Add(n)
+	for i := 0; i < n; i++ {
 		go func(i int) {
 			defer wg.Done()
 			f(i)
@@ -92,6 +100,7 @@ func ForIndex(num int, f func(i int)) {
 	wg.Wait()
 }
 
+// ForEach 会并发执行 f 中的函数并等待所有函数执行完毕
 func ForEach[T any](items []T, f func(item T)) {
 	var wg sync.WaitGroup
 	wg.Add(len(items))
@@ -104,6 +113,7 @@ func ForEach[T any](items []T, f func(item T)) {
 	wg.Wait()
 }
 
+// ForEachWithLimit 会限制并发次数执行 f 中的函数并等待所有函数执行完毕
 func ForEachWithLimit[T any](items []T, f func(item T), limit int) {
 	if limit == 0 {
 		limit = runtime.GOMAXPROCS(0)
